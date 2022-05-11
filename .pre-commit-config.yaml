@@ -28,3 +28,13 @@ repos:
     rev: v1.3
     hooks:
     - id: autoflake
+
+  - repo: local
+    hooks:
+      - id: unittest
+        name: unittest
+        entry: python -m unittest discover
+        language: system
+        "types": [python]
+        pass_filenames: false
+        stages: [commit, push]
