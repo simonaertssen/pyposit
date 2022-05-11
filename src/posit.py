@@ -49,8 +49,6 @@ class Posit(object):
 
         self.regimelen = 1  # + 1 for sign offset
         try:  # whether any change occurs in the entire bitarray
-            # print(str(1 - firstbit))
-            # print(bits[1:].index(str(1 - firstbit)))
             self.regimelen += bits[1:].index(str(1 - firstbit))
         except ValueError:
             self.regimelen = numbits - 1
@@ -74,16 +72,6 @@ class Posit(object):
         self.fraclen = numbits - self.signlen - self.regimelen - es
         assert numbits == self.signlen + self.regimelen + self.es + self.fraclen
 
-    # def _run_length_encoding(self, regime: int, regimelen: int) -> int:
-    #     """Turn the regime into a run-length encoded number k."""
-    #     # First find leading 1s and 0s: https://skalkoto.blogspot.com/2008/01/bit-operations-find-first-zero-bit.html
-    #     first_one: int = regime.bit_length()
-    #     popcount: int = bin(regime).count("1")
-    #     k: int = first_one - regimelen
-    #     if popcount > 1:
-    #         k += popcount - 1
-    #     return k
-
     def __repr__(self) -> str:
         return f"posit({self.to_float()})"
 
@@ -94,7 +82,6 @@ class Posit(object):
 
         denum: int = 2**(ceil(log2(self.fraction + 1)))
         f: float = self.fraction / denum
-        # print(s, e, r, f)
         return s * r * e * (1 + f)
 
     def __add__(self, other: 'Posit') -> 'Posit':

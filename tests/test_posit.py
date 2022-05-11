@@ -37,6 +37,11 @@ class PositTester(unittest.TestCase):
             self.p.__init__(bits='0' + regime + '101', numbits=8, es=1)
             self.assertEqual(self.p.k, k)
 
+    def test_float_representation(self) -> None:
+        """Test the representation of a posit as a float."""
+        self.p.__init__('0000110111011101', numbits=16, es=3)
+        self.assertEqual(self.p.to_float(), 477 / 134217728.0)
+
     def test_addition(self) -> None:
         """Test whether the posit addition is correct."""
 
