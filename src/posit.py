@@ -26,8 +26,7 @@ class Posit(object):
         # Fixed values
         self.bits: str = bits
         self.numbits: int = numbits
-        self.es: int = es
-        self.useed: int = 2**(2**self.es)
+        self.useed: int = 2  # Is 2**(2**self.es) but not if not set yet
 
         # Preallocate for switching between states
         self.sign: int = 0
@@ -35,18 +34,25 @@ class Posit(object):
         self.exponent: int = 0
         self.fraction: int = 0
 
-        self.k: int = 0
+        self.k: int = numbits - 1
         self.signlen: int = 1
-        self.regimelen: int = 0
+        self.regimelen: int = numbits - 1
+        self.es: int = 0
         self.fraclen: int = 0
 
         # Now register the correct values for sign, regime, exponent and fraction
         bits = '0' * (numbits - bitlen) + bits
         self.sign: int = int(bits[0], base=2)
 
+        # Set in case of extremes: 0 or infinity
+        if bits == '0' * numbits:
+            self.k *= -1
+            return
+        elif bits == '1' + '0' * (numbits - 1):
+            return
+
         # Start of the regime is where bits differ
         firstbit: int = int(bits[1], base=2)
-
         self.regimelen = 1  # + 1 for sign offset
         try:  # whether any change occurs in the entire bitarray
             self.regimelen += bits[1:].index(str(1 - firstbit))
@@ -54,26 +60,27 @@ class Posit(object):
             self.regimelen = numbits - 1
         else:
             self.regimelen += 1  # + 1 including the index in the range
-        assert 1 < self.regimelen < numbits
+        assert 1 < self.regimelen <= numbits
 
         self.regime = int(bits[1:self.regimelen], base=2)
         self.k = firstbit * (self.regimelen - 3) - (1 - firstbit) * (self.regimelen - 2)
 
-        # Set in case of extremes: 0 or infinity
-        if bits == '0' * numbits:
-            self.sign = 0
-            return
-        elif bits == '1' + '0' * (numbits - 1):
-            self.sign = 1
-            return
+        if self.regimelen < numbits - es:
+            self.exponent = int(bits[self.regimelen:self.regimelen + es], base=2)
+            self.es = es
+        if self.regimelen < numbits - es - 1:
+            self.fraction = int(bits[self.regimelen + es:], base=2)
+            self.fraclen = numbits - self.signlen - self.regimelen - es
 
-        self.exponent = int(bits[self.regimelen:self.regimelen + es], base=2)
-        self.fraction = int(bits[self.regimelen + es:], base=2)
-        self.fraclen = numbits - self.signlen - self.regimelen - es
+        self.useed = 2**(2**self.es)
         assert numbits == self.signlen + self.regimelen + self.es + self.fraclen
 
     def __repr__(self) -> str:
-        return f"posit({self.to_float()})"
+        s: str = format(self.sign, 'b')
+        r: str = format(self.regime, 'b')
+        e: str = format(self.exponent, 'b')
+        f: str = format(self.fraction, 'b')
+        return f"posit({s}{r}{e}{f}) = {self.to_float()}"
 
     def to_float(self) -> float:
         s: int = (-1)**(self.sign)

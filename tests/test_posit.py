@@ -30,12 +30,23 @@ class PositTester(unittest.TestCase):
 
     def test_run_length_encoding(self) -> None:
         """Test the correctness of the ruin length encoding of k."""
-        regimes: list[int] = ['0001', '0010', '0100', '1000', '1100', '1110']
-        expected_k: list[int] = [-3, -2, -1, 0, 1, 2]
+        regimes: list[int] = ['00001', '0001', '0010', '0100', '1000', '1100', '1110', '11110']
+        expected_k: list[int] = [-4, -3, -2, -1, 0, 1, 2, 3, 5]
 
         for regime, k in zip(regimes, expected_k):
-            self.p.__init__(bits='0' + regime + '101', numbits=8, es=1)
+            self.p.__init__(bits='0' + regime + max(0, 7 - len(regime)) * '0', numbits=8, es=1)
             self.assertEqual(self.p.k, k)
+
+        # Also test 0 and infinity
+        self.p.__init__(bits='0' * 8, numbits=8, es=1)
+        self.assertEqual(self.p.k, -7)
+        self.assertEqual(self.p.exponent, 0)
+        self.assertEqual(self.p.fraction, 0)
+
+        self.p.__init__(bits='1' + '0' * 7, numbits=8, es=1)
+        self.assertEqual(self.p.k, 7)
+        self.assertEqual(self.p.exponent, 0)
+        self.assertEqual(self.p.fraction, 0)
 
     def test_float_representation(self) -> None:
         """Test the representation of a posit as a float."""
