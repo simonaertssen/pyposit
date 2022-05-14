@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from math import log2, ceil
 
-from src.errors import NotSupportedError, BitSizeError
+from src.errors import BitSizeError
 
 
 class Posit(object):
@@ -11,7 +11,7 @@ class Posit(object):
         """Initialise the number and extract the different posit pieces."""
         # Verify input
         if not isinstance(bits, str):
-            raise NotSupportedError(f"{type(bits)} is not supported.")
+            raise NotImplementedError(f"{type(bits)} is not implemented.")
 
         if numbits not in (8, 16, 32, 64):
             raise BitSizeError()
@@ -43,6 +43,10 @@ class Posit(object):
         # Now register the correct values for sign, regime, exponent and fraction
         bits = '0' * (numbits - bitlen) + bits
         self.sign: int = int(bits[0], base=2)
+        # print(bits, int(bits, 2))
+        # if self.sign == 1:
+        #     bits = bin(~int(bits, base=2)).removeprefix('-0b')
+        # print(bits, int(bits, 2))
 
         # Set in case of extremes: 0 or infinity
         if bits == '0' * numbits:
@@ -93,10 +97,3 @@ class Posit(object):
 
     def __add__(self, other: 'Posit') -> 'Posit':
         pass
-
-
-if __name__ == "__main__":
-    p1 = Posit(bits='0000110111011101', es=3)
-    print(p1)
-    # p1 = Posit(bits='00001000', es=3)
-    # print(p1)
